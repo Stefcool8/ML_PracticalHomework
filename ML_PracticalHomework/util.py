@@ -1,5 +1,7 @@
 import os
 import string
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 class Util:
@@ -56,3 +58,13 @@ class Util:
     def split_mails_into_words(mails):
         mails = [mail.split() for mail in mails]
         return mails
+
+    @staticmethod
+    def plot_accuracy_per_category(categories, accuracies):
+        plt.figure(figsize=(10, 6))
+        plt.scatter(categories, accuracies, color='blue', s=100, alpha=0.7)
+        plt.xlabel('Categories')
+        plt.ylabel('Accuracy')
+        plt.title('Test Accuracies for each category')
+        plt.ylim(0.95, 1)  # Set y-axis limit between 0.95 and 1 for accuracy
+        plt.show()

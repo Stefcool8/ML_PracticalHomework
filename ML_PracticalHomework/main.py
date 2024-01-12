@@ -118,17 +118,16 @@ class NaiveBayesClassifier:
         else:
             return 1
 
-    def calculate_accuracy(self, parts_texts, parts_labels):
+    def calculate_accuracy(self, text_part, label_part):
         # Calculate accuracy
         correct = 0
         total = 0
 
-        for text_part, label_part in zip(parts_texts, parts_labels):
-            for text, label in zip(text_part, label_part):
-                result = self.classify(text)
-                if result == label:
-                    correct += 1
-                total += 1
+        for text, label in zip(text_part, label_part):
+            result = self.classify(text)
+            if result == label:
+                correct += 1
+            total += 1
 
         accuracy = correct / total
         return accuracy
@@ -151,7 +150,7 @@ class NaiveBayesClassifier:
                 excluded_texts, excluded_labels, _, _ = NaiveBayesClassifier.load_part_data(category, i)
 
                 # Calculate accuracy
-                accuracy = naive_bayes_classifier.calculate_accuracy([excluded_texts], [excluded_labels])
+                accuracy = naive_bayes_classifier.calculate_accuracy(excluded_texts, excluded_labels)
                 accuracies.append(accuracy)
 
             # Calculate mean accuracy
@@ -165,17 +164,41 @@ class NaiveBayesClassifier:
         test_texts, test_labels, _, _ = NaiveBayesClassifier.load_part_data(category, 10)
 
         # Calculate accuracy
-        accuracy = self.calculate_accuracy([test_texts], [test_labels])
+        accuracy = self.calculate_accuracy(test_texts, test_labels)
         print(f'{category} accuracy on test data: {accuracy}')
+
+        return accuracy
+
+    def train_accuracy(self, category):
+        # Load train data
+        train_texts = []
+        train_labels = []
+
+        for part_count in range(1, 10):
+            texts, labels, _, _ = NaiveBayesClassifier.load_part_data(category, part_count)
+            train_texts.extend(texts)
+            train_labels.extend(labels)
+
+        # Calculate accuracy
+        accuracy = self.calculate_accuracy(train_texts, train_labels)
+        print(f'{category} accuracy on train data: {accuracy}')
 
 
 def main():
+    test_accuracies = []
+
     # Train with all data
     for category in ['bare', 'lemm', 'lemm_stop', 'stop']:
         naive_bayes_classifier = NaiveBayesClassifier()
         naive_bayes_classifier.train(category)
 
-        naive_bayes_classifier.test_accuracy(category)
+        accuracy = naive_bayes_classifier.test_accuracy(category)
+        test_accuracies.append(accuracy)
+
+        naive_bayes_classifier.train_accuracy(category)
+
+    # Plot the test accuracies
+    Util.plot_accuracy_per_category(['bare', 'lemm', 'lemm_stop', 'stop'], test_accuracies)
 
     # Cross validation
     NaiveBayesClassifier.cross_validation()
